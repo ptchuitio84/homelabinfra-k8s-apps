@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sonarqube
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/ptchuitio84/homelabinfra-k8s-apps.git
+    targetRevision: main
+    path: sonarqube
+    helm:
+      valueFiles:
+        - values.yaml
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: sonarqube
+
+  syncPolicy:
+    automated:
+      prune: false        # Never auto-delete resources
+      selfHeal: true      # Reconcile drift automatically
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

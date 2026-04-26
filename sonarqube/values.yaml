@@ -1,0 +1,42 @@
+sonarqube:
+
+  # ── Ingress ──────────────────────────────────────────────────────────────
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    hosts:
+      - name: sonarqube.nnt.com
+        path: /
+    annotations: {}
+
+  # ── Persistence ──────────────────────────────────────────────────────────
+  # NFS StorageClass is the cluster default — survives pod rescheduling.
+  persistence:
+    enabled: true
+    storageClass: "nfs"
+    size: 20Gi
+
+  # ── Embedded PostgreSQL ───────────────────────────────────────────────────
+  # Single-node PostgreSQL bundled with the chart. Acceptable for a lab.
+  # Replace with an external managed DB before any production-like workload.
+  postgresql:
+    enabled: true
+    persistence:
+      storageClass: "nfs"
+      size: 20Gi
+
+  # ── Resources ─────────────────────────────────────────────────────────────
+  # SonarQube requires at least 1GB heap. 2GB limit gives the JVM room.
+  resources:
+    limits:
+      cpu: "1000m"
+      memory: "2Gi"
+    requests:
+      cpu: "400m"
+      memory: "1Gi"
+
+  # ── JVM ───────────────────────────────────────────────────────────────────
+  jvmOpts: "-Xms512m -Xmx1024m"
+
+  # ── Edition ───────────────────────────────────────────────────────────────
+  edition: "community"
