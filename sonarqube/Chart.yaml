@@ -2,9 +2,13 @@ apiVersion: v2
 name: sonarqube
 description: SonarQube Community Edition — NNT homelab
 type: application
-version: 1.0.0
+version: 1.0.1
 
 dependencies:
   - name: sonarqube
-    version: "10.7.0"
+    version: "2026.2.1"
     repository: https://SonarSource.github.io/helm-chart-sonarqube
+  - name: postgresql
+    version: "16.7.27"
+    repository: https://charts.bitnami.com/bitnami
+    condition: postgresql.enabled

@@ -1,6 +1,21 @@
+# ── Bitnami PostgreSQL ────────────────────────────────────────────────────────
+# Separate subchart — SonarSource dropped the embedded postgres in 2025+ charts.
+postgresql:
+  enabled: true
+  auth:
+    database: sonarqube
+    username: sonarqube
+    password: sonarqube
+  primary:
+    persistence:
+      enabled: true
+      storageClass: "nfs"
+      size: 20Gi
+
+# ── SonarQube ─────────────────────────────────────────────────────────────────
 sonarqube:
 
-  # ── Ingress ──────────────────────────────────────────────────────────────
+  # ── Ingress
   ingress:
     enabled: true
     ingressClassName: traefik
@@ -9,24 +24,21 @@ sonarqube:
         path: /
     annotations: {}
 
-  # ── Persistence ──────────────────────────────────────────────────────────
-  # NFS StorageClass is the cluster default — survives pod rescheduling.
+  # ── External DB — bitnami postgresql from this umbrella chart
+  # Service name: sonarqube-postgresql (Helm release sonarqube + subchart postgresql)
+  jdbcOverwrite:
+    enabled: true
+    jdbcUrl: "jdbc:postgresql://sonarqube-postgresql:5432/sonarqube"
+    jdbcUsername: "sonarqube"
+    jdbcPassword: "sonarqube"
+
+  # ── Persistence — NFS storageClass survives pod rescheduling
   persistence:
     enabled: true
     storageClass: "nfs"
     size: 20Gi
 
-  # ── Embedded PostgreSQL ───────────────────────────────────────────────────
-  # Single-node PostgreSQL bundled with the chart. Acceptable for a lab.
-  # Replace with an external managed DB before any production-like workload.
-  postgresql:
-    enabled: true
-    persistence:
-      storageClass: "nfs"
-      size: 20Gi
-
-  # ── Resources ─────────────────────────────────────────────────────────────
-  # SonarQube requires at least 1GB heap. 2GB limit gives the JVM room.
+  # ── Resources
   resources:
     limits:
       cpu: "1000m"
@@ -35,8 +47,8 @@ sonarqube:
       cpu: "400m"
       memory: "1Gi"
 
-  # ── JVM ───────────────────────────────────────────────────────────────────
+  # ── JVM
   jvmOpts: "-Xms512m -Xmx1024m"
 
-  # ── Edition ───────────────────────────────────────────────────────────────
+  # ── Edition
   edition: "community"
