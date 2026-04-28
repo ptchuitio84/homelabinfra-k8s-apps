@@ -1,20 +1,3 @@
-# ── Bitnami PostgreSQL ────────────────────────────────────────────────────────
-# Separate subchart — SonarSource dropped the embedded postgres in 2025+ charts.
-# Bitnami stopped publishing to Docker Hub in Oct 2024; override registry to ghcr.io.
-postgresql:
-  enabled: true
-  image:
-    registry: ghcr.io
-  auth:
-    database: sonarqube
-    username: sonarqube
-    password: sonarqube
-  primary:
-    persistence:
-      enabled: true
-      storageClass: "nfs"
-      size: 20Gi
-
 # ── SonarQube ─────────────────────────────────────────────────────────────────
 sonarqube:
 
@@ -27,8 +10,8 @@ sonarqube:
         path: /
     annotations: {}
 
-  # ── External DB — bitnami postgresql from this umbrella chart
-  # Service name: sonarqube-postgresql (Helm release sonarqube + subchart postgresql)
+  # ── External DB — postgres StatefulSet deployed alongside this chart
+  # Service name: sonarqube-postgresql (defined in templates/postgres.yaml)
   jdbcOverwrite:
     enabled: true
     jdbcUrl: "jdbc:postgresql://sonarqube-postgresql:5432/sonarqube"

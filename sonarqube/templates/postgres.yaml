@@ -1,0 +1,72 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sonarqube-postgresql
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: sonarqube-postgresql
+    app.kubernetes.io/part-of: sonarqube
+spec:
+  selector:
+    app.kubernetes.io/name: sonarqube-postgresql
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+  clusterIP: None
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: sonarqube-postgresql
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: sonarqube-postgresql
+    app.kubernetes.io/part-of: sonarqube
+spec:
+  serviceName: sonarqube-postgresql
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: sonarqube-postgresql
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: sonarqube-postgresql
+    spec:
+      # Fix NFS volume ownership before postgres starts.
+      # postgres (UID 999) requires mode 700 on PGDATA; NFS mounts may not satisfy that.
+      initContainers:
+        - name: fix-permissions
+          image: busybox
+          command: ["sh", "-c", "mkdir -p /data/pgdata && chown -R 999:999 /data && chmod 700 /data/pgdata"]
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      containers:
+        - name: postgresql
+          image: postgres:17-alpine
+          env:
+            - name: POSTGRES_DB
+              value: sonarqube
+            - name: POSTGRES_USER
+              value: sonarqube
+            - name: POSTGRES_PASSWORD
+              value: sonarqube
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: nfs
+        resources:
+          requests:
+            storage: 20Gi
