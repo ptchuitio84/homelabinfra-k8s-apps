@@ -52,3 +52,6 @@ sonarqube:
 
   # ── Edition
   edition: "community"
+
+  # ── Monitoring — required by chart validation; used by readiness/liveness probes
+  monitoringPasscode: "nnt-sonarqube-monitor"
