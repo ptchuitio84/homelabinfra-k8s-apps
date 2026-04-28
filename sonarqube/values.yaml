@@ -1,7 +1,10 @@
 # ── Bitnami PostgreSQL ────────────────────────────────────────────────────────
 # Separate subchart — SonarSource dropped the embedded postgres in 2025+ charts.
+# Bitnami stopped publishing to Docker Hub in Oct 2024; override registry to ghcr.io.
 postgresql:
   enabled: true
+  image:
+    registry: ghcr.io
   auth:
     database: sonarqube
     username: sonarqube
