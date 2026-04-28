@@ -50,8 +50,9 @@ sonarqube:
   # ── JVM
   jvmOpts: "-Xms512m -Xmx1024m"
 
-  # ── Edition
-  edition: "community"
+  # ── Edition — community.enabled replaces the old "edition: community" field in 2026.x
+  community:
+    enabled: true
 
   # ── Monitoring — required by chart validation; used by readiness/liveness probes
   monitoringPasscode: "nnt-sonarqube-monitor"
