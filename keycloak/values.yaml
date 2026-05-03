@@ -19,7 +19,12 @@ keycloakx:
         name: keycloak-admin-secret
 
   # ── Database — external Postgres StatefulSet in templates/postgres.yaml
+  # KC_CACHE=local disables JGroups/Infinispan clustering — required for
+  # single-node deployments. Without it, DNS_PING fails with "dns_query
+  # can not be null or empty" and Keycloak crashes on startup.
   extraEnv: |
+    - name: KC_CACHE
+      value: local
     - name: KC_DB
       value: postgres
     - name: KC_DB_URL_HOST
