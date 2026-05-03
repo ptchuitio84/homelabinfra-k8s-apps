@@ -9,6 +9,7 @@ keycloakx:
     - "start-dev"
     - "--hostname=keycloak.nnt.com"
     - "--hostname-admin=keycloak.nnt.com"
+    - "--cache=local"
 
   # ── Admin credentials
   # K8s Secret created by Ansible from Vault before this chart is deployed:
@@ -18,13 +19,14 @@ keycloakx:
     - secretRef:
         name: keycloak-admin-secret
 
+  # ── Cache — local mode disables JGroups/Infinispan clustering.
+  # Required for single-node. Also passed as --cache=local in args above
+  # to avoid conflict with the chart's default KC_CACHE_STACK env var.
+  cache:
+    stack: local
+
   # ── Database — external Postgres StatefulSet in templates/postgres.yaml
-  # KC_CACHE=local disables JGroups/Infinispan clustering — required for
-  # single-node deployments. Without it, DNS_PING fails with "dns_query
-  # can not be null or empty" and Keycloak crashes on startup.
   extraEnv: |
-    - name: KC_CACHE
-      value: local
     - name: KC_DB
       value: postgres
     - name: KC_DB_URL_HOST
