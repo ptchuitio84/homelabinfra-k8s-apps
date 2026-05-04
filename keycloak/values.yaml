@@ -60,5 +60,10 @@ keycloakx:
       cpu: 1000m
       memory: 1Gi
 
+  # ── Context path — Keycloak 17+ serves at root by default.
+  # The chart defaults to /auth for backward compat — override to /.
+  http:
+    relativePath: "/"
+
   # ── Replicas
   replicas: 1
