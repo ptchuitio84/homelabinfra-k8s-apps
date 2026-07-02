@@ -12,7 +12,7 @@ Pushing a change to this repo is a deployment. ArgoCD handles the diff, apply, a
 Git push (this repo)
     │
     ▼
-ArgoCD (argocd.nnt.com) — continuous sync, ~30s loop
+ArgoCD (argocd.homelab.local) — continuous sync, ~30s loop
     │
     ├── Detects drift or new commit
     ├── Runs helm dependency build + helm upgrade --install
@@ -23,10 +23,10 @@ ArgoCD (argocd.nnt.com) — continuous sync, ~30s loop
             └── Application pod(s)
 ```
 
-**Cluster:** k3s on `hmvlapk8s001–003` (control plane + 2 workers)  
-**Ingress:** Traefik at `10.10.1.200` — all apps routed by hostname via single LoadBalancer IP  
-**Storage:** NFS StorageClass (default) — provisioned by `nfs-subdir-external-provisioner` against `hmvlapnfs001` (`/exports/k8s`)  
-**GitOps controller:** ArgoCD at `http://argocd.nnt.com` — credentials managed in Vault  
+**Cluster:** k3s on `k8s-ctrl-01, k8s-worker-01/02` (control plane + 2 workers)  
+**Ingress:** Traefik at `192.168.1.200` — all apps routed by hostname via single LoadBalancer IP  
+**Storage:** NFS StorageClass (default) — provisioned by `nfs-subdir-external-provisioner` against `nfs-01` (`/exports/k8s`)  
+**GitOps controller:** ArgoCD at `http://argocd.homelab.local` — credentials managed in Vault  
 
 ---
 
@@ -61,9 +61,9 @@ These must exist in the cluster before any app can deploy successfully:
 | Dependency | How It's Deployed |
 |---|---|
 | k3s cluster (3 nodes) | `setup_k3s.yml` + `setup_k8_worker.yml` Ansible playbooks |
-| MetalLB | `setup_metallb.yml` — IP pool 10.10.1.200–210 |
-| Traefik ingress | `setup_traefik.yml` — ExternalIP 10.10.1.200 |
-| ArgoCD | `setup_argocd.yml` — UI at argocd.nnt.com |
+| MetalLB | `setup_metallb.yml` — IP pool 192.168.1.200–210 |
+| Traefik ingress | `setup_traefik.yml` — ExternalIP 192.168.1.200 |
+| ArgoCD | `setup_argocd.yml` — UI at argocd.homelab.local |
 | NFS StorageClass | `k8s_nfs_provisioner` Ansible role — default StorageClass |
 | ArgoCD → GitHub credential | `setup_argocd_repo.yml` — K8s secret from Vault PAT |
 
@@ -121,7 +121,7 @@ dependencies:
     enabled: true
     ingressClassName: traefik
     hosts:
-      - name: <appname>.nnt.com
+      - name: <appname>.homelab.local
         path: /
   persistence:
     enabled: true
@@ -163,7 +163,7 @@ spec:
 
 **Step 3 — Add a DNS record:**
 
-`<appname>.nnt.com → 10.10.1.200` (Traefik IP — same for all apps, routed by Host header).
+`<appname>.homelab.local → 192.168.1.200` (Traefik IP — same for all apps, routed by Host header).
 
 **Step 4 — Apply:**
 
@@ -193,13 +193,13 @@ kubectl apply -f argocd-apps/<appname>.yaml
 
 | App | Namespace | Hostname | Chart | Storage |
 |---|---|---|---|---|
-| SonarQube | sonarqube | sonarqube.nnt.com | sonarqube 10.7.0 | NFS, 20Gi data + 20Gi DB |
+| SonarQube | sonarqube | sonarqube.homelab.local | sonarqube 10.7.0 | NFS, 20Gi data + 20Gi DB |
 
 ---
 
 ## SonarQube
 
-**Access:** `http://sonarqube.nnt.com`  
+**Access:** `http://sonarqube.homelab.local`  
 **Default credentials:** admin / admin (change on first login)  
 **Edition:** Community (free, single-branch analysis)  
 **Database:** Embedded PostgreSQL (acceptable for lab — replace with external DB before any production use)  
